@@ -1,0 +1,94 @@
+---
+title: "Untitled"
+author: "Sarah Willington"
+date: "2025-09-03"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+```{r libraries, include=FALSE}
+library(tidyverse)
+library(here)
+```
+
+
+```{r}
+
+# Define base parameters
+Linf <- 100    # asymptotic length
+K <- 0.2       # growth coefficient
+t0 <- 0        # theoretical age at length 0
+
+# Ages to calculate
+ages <- seq(0, 20, 0.001)
+
+# VBGF function
+vb <- function(age, Linf, K, t0) {
+  Linf * (1 - exp(-K * (age - t0)))
+}
+
+# Initial growth rate (dL/dt at age 0)
+growth_rate0 <- K * Linf * exp(K * t0)
+
+# Define scenarios with adjusted Linf and K
+scenarios <- data.frame(
+  Linf = c(Linf, 0.9*Linf, 0.8*Linf)
+) %>%
+  mutate(
+    K = growth_rate0 / (Linf * exp(K * t0)),   # adjust K
+    perc_change = (K / 0.2 - 1) * 100,         # % change from baseline
+    label = paste0("Linf = ", Linf,
+                   ", K = ", round(K,3),
+                   " (", round(perc_change,1), "%)")
+  )
+
+# Generate growth curves
+curves <- scenarios %>%
+  rowwise() %>%
+  mutate(data = list(
+    data.frame(
+      Age = ages,
+      Length = vb(ages, Linf, K, t0),
+      Curve = label
+    )
+  )) %>%
+  pull(data) %>%
+  bind_rows()%>% 
+  mutate(legend = case_when(Curve == "Linf = 100, K = 0.2 (0%)" ~ "100", 
+                            Curve == "Linf = 90, K = 0.222 (11.1%)" ~ "90",
+                            Curve == "Linf = 80, K = 0.25 (25%)" ~ "80"))
+  
+curves$legend <- factor(curves$legend, levels = c("100", "90", "80"), ordered = T)
+  
+cbPalette <- c("#CC79A7", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00","#000000" )
+
+
+plot <- ggplot(curves, aes(x = Age, y = Length, colour = legend)) +
+  geom_line(size=1.1) +
+  theme_classic(base_size = 14) +
+  labs(x="Age", y="Length") +
+  scale_color_manual(
+    values = cbPalette,
+    labels = c(
+      "100" = expression("L"[inf]*" = 100, K = 0.2"), 
+      "90"  = expression("L"[inf]*" = 90, K = 0.22 (+11.1%)"),
+      "80"  = expression("L"[inf]*" = 80, K = 0.25 (+25%)")
+    )
+  ) +
+  theme(legend.title = element_blank())
+
+project_dir <- here::here()
+plot_path <- file.path(project_dir, "03_graphics", "absolute_growth_Vs_K.png")
+
+ggsave(plot_path, 
+       plot,
+       width = 17, height = 8, units = "cm", 
+       dpi = 300)
+
+
+```
+

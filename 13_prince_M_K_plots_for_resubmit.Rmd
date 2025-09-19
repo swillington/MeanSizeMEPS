@@ -1,0 +1,214 @@
+---
+title: "MK plots"
+author: "Sarah Willington"
+date: "2025-09-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+
+```{r libraries, include=FALSE}
+library(tidyverse)
+library(here)
+library(colorspace)
+library(patchwork)
+
+proj_dir <- here()
+
+```
+
+```{r load data}
+mk <- read_csv("0_data/Prince_2023_MK.csv")
+mk_summary <- mk %>% group_by(species) %>% 
+  summarise(n_species=n())
+```
+
+```{r filter data}
+mk_filtered <- mk %>% filter(standardised.M.K<5 & standardised.M.K>0.3) %>% 
+  filter(standardised.K<2) %>% 
+  filter(Hoenig.M<2)
+
+mk_summary <- mk_filtered %>% group_by(species) %>% 
+  summarise(n_species=n())
+
+ggplot(mk_filtered, aes(standardised.M.K, latitude))+
+  geom_point()
+
+ggplot(mk_filtered, aes(standardised.K, Hoenig.M))+
+  geom_point()
+
+```
+
+## filter out species
+
+1 Acanthopagrus butcheri (black bream), 2 Nemadactylus macropterus (jackass morwong), 3 Thalassoma lunare (moon wrasse), 4 Mullus barbatus (red mullet), 5 Pagrus auratus (aus snapper), 6 Cephalopholis argus (peacock hind), 7\
+Ctenochaetus striatus (striated surgeonfish), 8 Xiphias gladius (swordfish), 9 Beryx splendens (alfonsino)
+
+```{r}
+mk_select <- mk_filtered %>% 
+  filter(species == "Acanthopagrus butcheri"|
+           species == "Nemadactylus macropterus"|
+           species == "Thalassoma lunare"|
+           species == "Mullus barbatus"|
+           species == "Pagrus auratus"|
+           species == "Cephalopholis argus"|
+           species == "Ctenochaetus striatus"|
+           species == "Xiphias gladius"|
+           species == "Beryx splendens"|
+           species == "Naso unicornis"|
+           species == "Scomberomorus commerson"|
+           species == "Acanthurus bahiannus"|
+           species == "Helicolenus dactylopterus"|
+           species == "Scomber japonicus"|
+           species == "Boops boops"|
+           species == "Genypterus blacodes")
+```
+
+```{r mk lat plot}
+mk_lat_plot <- ggplot(mk_select, aes(latitude, standardised.M.K))+
+  geom_point(size=1.2)+
+  facet_wrap(.~species, scales = "free_y")+
+  labs(x = "Latitude", y = "M/K ratio")+
+  #geom_smooth(method = 'lm') +
+  theme_bw()+
+  theme(strip.text = element_text(face = "italic", size = 8),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+mk_lat_plot
+
+plot_path <- file.path(proj_dir, "03_graphics", "MK plots")
+
+# ggsave("mk_lat_plot_noline_samex.png",
+#        plot = mk_lat_plot,
+#        path = plot_path,
+#        dpi = 300,
+#        height = 20,
+#        width = 20,
+#        units = "cm")
+
+```
+
+```{r m lat plot}
+
+m_lat_plot <- ggplot(mk_select, aes(latitude, Hoenig.M))+
+  geom_point(size=1.2)+
+  facet_wrap(.~species, scales = "free_y")+
+  labs(x = "Latitude", y = "M (mortality)")+
+  #geom_smooth(method = 'lm') +
+  theme_bw()+
+  theme(strip.text = element_text(face = "italic", size = 8),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+m_lat_plot
+
+plot_path <- file.path(proj_dir, "03_graphics", "MK plots")
+
+# ggsave("m_lat_plot.png",
+#        plot = m_lat_plot,
+#        path = plot_path,
+#        dpi = 300,
+#        height = 20,
+#        width = 20,
+#        units = "cm")
+
+m_summary <- mk_select %>% group_by(species, latitude) %>% 
+  summarise(min_m = min(Hoenig.M), max_m = max(Hoenig.M), diff_m = ((max_m - min_m)/min_m)*100) %>% 
+  filter(diff_m>0)
+
+mean_m_diff <- m_summary %>% group_by(species) %>% 
+  summarise(mean_diff = mean(diff_m))
+
+ggplot(mean_m_diff, aes(species, mean_diff))+
+  geom_point()+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 35, vjust = 0.5))+
+  labs(x = "Species", y="Mean difference in M within latidude")
+
+ggplot(m_summary, aes(species, diff_m))+
+  geom_boxplot()+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 35, vjust = 0.5))+
+  labs(x = "Species", y="Mean difference in M within latidude")
+
+ggplot(m_summary, aes(x = species, y = diff_m)) +
+  geom_boxplot(fill = "grey80", color = "black", outlier.shape = 21, outlier.fill = "red", outlier.size = 2) +
+  theme_classic(base_size = 14) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1, size = 12, face = "italic"),
+    axis.text.y = element_text(size = 12),
+    axis.title = element_text(size = 14, face = "bold"),
+    axis.line = element_line(size = 0.6),
+    panel.grid.major.y = element_line(color = "grey90", size = 0.4),
+    panel.grid.minor.y = element_blank(), 
+    plot.margin = margin(t = 1, r = 1, b = 0.5, l = 1.5, unit = "cm")
+    
+  ) +
+  labs(
+    x = "Species",
+    y = "% difference in M within latitude"
+  )
+
+ggsave("m_lat_variation_plot.png",
+       plot = last_plot(),
+       path = plot_path,
+       dpi = 300,
+       height = 20,
+       width = 25,
+       units = "cm")
+
+```
+
+```{r m k plot}
+m_k_plot <- ggplot(mk_select, aes(standardised.K, Hoenig.M))+
+  geom_point(size=1.2)+
+  facet_wrap(.~species, scales = "free")+
+  labs(x = "K (growth)", y = "M (mortality)")+
+  geom_smooth(method = 'lm') +
+  theme_bw()+
+  theme(strip.text = element_text(face = "italic", size = 8),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+m_k_plot
+
+plot_path <- file.path(proj_dir, "03_graphics", "MK plots")
+
+# ggsave("m_k_plot.png", 
+#        plot = m_k_plot, 
+#        path = plot_path,
+#        dpi = 300, 
+#        height = 20, 
+#        width = 20, 
+#        units = "cm")
+
+```
+
+```{r}
+K_lat_plot <- ggplot(mk_select, aes(latitude, standardised.K))+
+  geom_point(size=1.2)+
+  facet_wrap(.~species, scales = "free")+
+  labs(x = "Latitude", y = "K (growth)")+
+  geom_smooth(method = 'lm') +
+  theme_bw()+
+  theme(strip.text = element_text(face = "italic", size = 8),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank())
+
+K_lat_plot
+
+plot_path <- file.path(proj_dir, "03_graphics", "MK plots")
+
+ggsave("K_lat_plot.png",
+       plot = K_lat_plot,
+       path = plot_path,
+       dpi = 300,
+       height = 20,
+       width = 20,
+       units = "cm")
+
+```
