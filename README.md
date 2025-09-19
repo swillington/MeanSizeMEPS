@@ -1,4 +1,4 @@
-# MEPS paper code "Species mean length can increase with warming without breaking the temperature size rule" 
+# MEPS paper code "Declining mortality to growth relationships can reconcile increasing mean fish length and the temperature size rule " 
 ## Willington et al. 2025 (submitted)
 
 Contact email: sarah.willington@utas.edu.au
