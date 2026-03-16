@@ -1,9 +1,9 @@
-# MEPS paper code "Declining mortality to growth relationships can reconcile increasing mean fish length and the temperature size rule " 
-## Willington et al. 2025 (submitted)
+# Increasing mean fish length under warming can be reconciled with the temperature–size rule when mortality-to-growth ratios decline
+## Willington et al. 2026 
 
 Contact email: sarah.willington@utas.edu.au
 
-All code used in MEPS paper (chapter 1 PhD thesis).
+Analysis of fish mean length and length-frequency distributions with declining asymptotic length and changing M/K ratios, as expected with ocean warming. This is code and data to support the manuscript "Increasing mean fish length under warming can be reconciled with the temperature–size rule when mortality-to-growth ratios decline" published in Marine Ecological Progress Series (MEPS). 
 
 Run code in the order the scripts are numbered, as earlier scripts produce data used in later scripts. 
 
@@ -12,9 +12,6 @@ Run code in the order the scripts are numbered, as earlier scripts produce data 
 - output 3 = SENS, sensitivity analysis
 
 Prince et al. (2023) data found at https://doi.org/10.1093/icesjms/fsad026 in the Supplementary material
-
-
-Please do not use/publish this code before this paper is published. 
 
 
 ### Reference
