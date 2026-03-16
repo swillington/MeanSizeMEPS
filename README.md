@@ -13,6 +13,8 @@ Run code in the order the scripts are numbered, as earlier scripts produce data 
 
 Prince et al. (2023) data found at https://doi.org/10.1093/icesjms/fsad026 in the Supplementary material
 
+Zenodo archieve https://doi.org/10.5281/zenodo.19044250
+
 
 ### Reference
 Jeremy D Prince, Chris Wilcox, Norman Hall, How to estimate life history ratios to simplify data-poor fisheries assessment, ICES Journal of Marine Science, Volume 80, Issue 10, December 2023, Pages 2619–2629, https://doi.org/10.1093/icesjms/fsad026
